@@ -97,3 +97,8 @@ variable "identity_group_aliases" {
   type    = any
   default = {}
 }
+
+variable "pki_root_certs" {
+  type    = any
+  default = {}
+}

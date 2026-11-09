@@ -195,6 +195,7 @@ resource "vault_mount" "mounts" {
   path     = try(each.value.path, each.key)
   type     = each.value.type
   options  = try(each.value.options, null)
+  max_lease_ttl_seconds = try(each.value.max_lease_ttl_seconds, null)
 }
 
 resource "vault_auth_backend" "auth_backends" {
@@ -241,6 +242,7 @@ resource "vault_kubernetes_auth_backend_role" "kubernetes" {
   bound_service_account_names      = each.value.bound_service_account_names
   bound_service_account_namespaces = each.value.bound_service_account_namespaces
   token_policies                   = try(each.value.token_policies, null)
+  audience                         = try(each.value.audience, null)
   depends_on                       = [vault_policy.policy]
 }
 
@@ -260,4 +262,15 @@ resource "vault_aws_auth_backend_role" "aws" {
   token_ttl                       = try(each.value.token_ttl, null)
   token_max_ttl                   = try(each.value.token_max_ttl, null)
   token_policies                  = try(each.value.token_policies, null)
+}
+
+resource "vault_pki_secret_backend_root_cert" "pki_root_certs" {
+  for_each        = var.pki_root_certs
+  backend         = vault_mount.mounts[each.value.mount].path
+  type            = "internal"
+  common_name     = each.value.common_name
+  ttl             = try(each.value.ttl, null)
+  key_type        = try(each.value.key_type, null)
+  key_bits        = try(each.value.key_bits, null)
+  max_path_length = try(each.value.max_path_length, null)
 }
